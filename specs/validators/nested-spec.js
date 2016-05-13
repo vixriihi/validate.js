@@ -1,6 +1,6 @@
-describe('validator.values', function() {
+describe('validator.nested', function() {
   
-  var values = validate.validators.values.bind(validate.validators.values);
+  var values = validate.validators.nested.bind(validate.validators.nested);
 
   describe("propegates options as sub-validations", function() {
     it("applies equality and inclusion validations to interior attributes", function() {
@@ -22,8 +22,8 @@ describe('validator.values', function() {
     it("supports two layers of value constraints", function() {
       var schema = {
         "some.array": {
-          values: {
-            values: {
+          nested: {
+            nested: {
               inclusion: {
                 within: ["validVal"]
               }
