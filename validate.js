@@ -1147,7 +1147,7 @@
     },
 
     // Nested values validator support
-    nested: function(value, options) {
+    items: function(value, options) {
       var internalConstraints = options
         , internalOptions = { format: "flat" }
         , validationResults = [];
