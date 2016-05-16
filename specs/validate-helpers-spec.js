@@ -729,17 +729,6 @@ describe("validate", function() {
   });
 
   describe("getDeepObjectValue", function() {
-    it("supports multiple keys separated using a period", function() {
-      var attributes = {
-        foo: {
-          bar: {
-            baz: 3
-          }
-        }
-      };
-
-      expect(validate.getDeepObjectValue(attributes, "foo.bar.baz")).toBe(3);
-    });
 
     it("returns undefined if any key is not found", function() {
       var attributes = {
@@ -768,31 +757,6 @@ describe("validate", function() {
       expect(validate.getDeepObjectValue({}, {})).toBe(undefined);
       expect(validate.getDeepObjectValue({}, [])).toBe(undefined);
       expect(validate.getDeepObjectValue({}, true)).toBe(undefined);
-    });
-
-    it("handles escapes properly", function() {
-      var attributes = {
-        "foo.bar": {
-          baz: 3
-        },
-        "foo\\": {
-          bar: {
-            baz: 5
-          }
-        }
-      };
-
-      expect(validate.getDeepObjectValue(attributes, "foo.bar.baz"))
-        .toBe(undefined);
-
-      expect(validate.getDeepObjectValue(attributes, "foo\\.bar.baz"))
-        .toBe(3);
-
-      expect(validate.getDeepObjectValue(attributes, "foo\\\\.bar.baz"))
-        .toBe(5);
-
-      expect(validate.getDeepObjectValue(attributes, "\\foo\\\\.bar.baz"))
-        .toBe(5);
     });
   });
 
@@ -1043,48 +1007,6 @@ describe("validate", function() {
       expect(validate.cleanAttributes(input, {foo: false})).toEqual({});
     });
 
-    it("handles nested objects", function() {
-      var attributes = {
-        "foo.bar.baz": "foobarbaz",
-        foo: {
-          shouldBeRemoved: "yup",
-          bar: {
-            shouldAlsoBeRemoved: "uhuh",
-            baz: "baz",
-            quux: "quux"
-          }
-        },
-        one: {
-          two: {
-            four: "shouldBeRemoved"
-          }
-        },
-        somethingThatIsNull: null
-      };
-
-      var whitelist = {
-        "foo\\.bar\\.baz": true,
-        "foo.bar.baz": true,
-        "foo.bar.quux": true,
-        "one.two.three": true,
-        "somethingThatIsNull.someSubThingie": true
-      };
-      expect(validate.cleanAttributes(attributes, whitelist)).toEqual({
-        "foo.bar.baz": "foobarbaz",
-        foo: {
-          bar: {
-            baz: "baz",
-            quux: "quux"
-          }
-        },
-        one: {
-          two: {
-          }
-        },
-        somethingThatIsNull: null
-      });
-    });
-
     it("works with constraints", function() {
       var attributes = {
         name: "Test",
@@ -1101,9 +1023,13 @@ describe("validate", function() {
           presence: true
         },
         description: {},
-        "address.street": {},
-        "address.postal": {},
-        "address.country": {}
+        address: {
+          properties: {
+            street: {},
+            postal: {},
+            country: {}
+          }
+        }
       };
 
       expect(validate.cleanAttributes(attributes, constraints)).not.toBe(attributes);
