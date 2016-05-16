@@ -16,6 +16,7 @@
   //     * flat - Returns a flat array of just the error messages
   //     * grouped - Returns the messages grouped by attribute (default)
   //     * detailed - Returns an array of the raw validation data
+  //     * jsonPath - Returns an object where key is path to error and value is array of errors
   //   - fullMessages (boolean) - If `true` (default) the attribute name is prepended to the error.
   //
   // Please note that the options are also passed to each validator.
@@ -159,6 +160,23 @@
 
         case "flat":
           errors = v.flattenErrorsToArray(errors);
+          break;
+
+        case "jsonPath":
+          errors = v.jsonPathError(errors);
+
+          var real = {};
+          for (attr in errors) {
+            if (v.isObject(errors[attr]) && !v.isArray(errors[attr])) {
+              var k;
+              for (k in errors[attr]) {
+                real[k] = errors[attr][k];
+              }
+            } else {
+              real[attr] = errors[attr];
+            }
+          }
+          errors = real;
           break;
 
         case "grouped":
@@ -475,40 +493,7 @@
       if (!v.isString(keypath)) {
         return undefined;
       }
-
-      var key = ""
-        , i
-        , escape = false;
-
-      for (i = 0; i < keypath.length; ++i) {
-        switch (keypath[i]) {
-          case '.':
-            if (escape) {
-              escape = false;
-              key += '.';
-            } else {
-              object = callback(object, key, false);
-              key = "";
-            }
-            break;
-
-          case '\\':
-            if (escape) {
-              escape = false;
-              key += '\\';
-            } else {
-              escape = true;
-            }
-            break;
-
-          default:
-            escape = false;
-            key += keypath[i];
-            break;
-        }
-      }
-
-      return callback(object, key, true);
+      return callback(object, keypath, true);
     },
 
     getDeepObjectValue: function(obj, keypath) {
@@ -638,11 +623,11 @@
       var ret = [];
       errors.forEach(function(errorInfo) {
         var error = v.result(errorInfo.error,
-            errorInfo.value,
-            errorInfo.attribute,
-            errorInfo.options,
-            errorInfo.attributes,
-            errorInfo.globalOptions);
+          errorInfo.value,
+          errorInfo.attribute,
+          errorInfo.options,
+          errorInfo.attributes,
+          errorInfo.globalOptions);
 
         if (!v.isString(error)) {
           ret.push(errorInfo);
@@ -684,6 +669,21 @@
     // ["<message 1>", "<message 2>"]
     flattenErrorsToArray: function(errors) {
       return errors.map(function(error) { return error.error; });
+    },
+
+    jsonPathError: function(errors) {
+      var ret = {};
+      errors.forEach(function(error) {
+        if (v.isObject(error.error)) {
+          ret[error.attribute] = error.error;
+        } else {
+          if (typeof ret[error.attribute] === 'undefined') {
+            ret[error.attribute] = [];
+          }
+          ret[error.attribute].push(error.error);
+        }
+      });
+      return ret;
     },
 
     cleanAttributes: function(attributes, whitelist) {
@@ -831,12 +831,12 @@
         , name
         , count
         , checks = {
-            greaterThan:          function(v, c) { return v > c; },
-            greaterThanOrEqualTo: function(v, c) { return v >= c; },
-            equalTo:              function(v, c) { return v === c; },
-            lessThan:             function(v, c) { return v < c; },
-            lessThanOrEqualTo:    function(v, c) { return v <= c; }
-          };
+        greaterThan:          function(v, c) { return v > c; },
+        greaterThanOrEqualTo: function(v, c) { return v >= c; },
+        equalTo:              function(v, c) { return v === c; },
+        lessThan:             function(v, c) { return v < c; },
+        lessThanOrEqualTo:    function(v, c) { return v <= c; }
+      };
 
       // Coerce the value to a number unless we're being strict.
       if (options.noStrings !== true && v.isString(value)) {
@@ -1067,10 +1067,10 @@
       // https://gist.github.com/dperini/729294
       var regex =
         "^" +
-          // schemes
-          "(?:(?:" + schemes.join("|") + "):\\/\\/)" +
-          // credentials
-          "(?:\\S+(?::\\S*)?@)?";
+        // schemes
+        "(?:(?:" + schemes.join("|") + "):\\/\\/)" +
+        // credentials
+        "(?:\\S+(?::\\S*)?@)?";
 
       regex += "(?:";
 
@@ -1093,21 +1093,21 @@
       }
 
       var hostname =
-          "(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)" +
-          "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*" +
-          tld + ")";
+        "(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)" +
+        "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*" +
+        tld + ")";
 
       // reserved addresses
       regex +=
-          "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
-          "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
-          "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
+        "(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])" +
+        "(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}" +
+        "(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))" +
         "|" +
-          hostname +
-          // port number
-          "(?::\\d{2,5})?" +
-          // path
-          "(?:\\/[^\\s]*)?" +
+        hostname +
+        // port number
+        "(?::\\d{2,5})?" +
+        // path
+        "(?:\\/[^\\s]*)?" +
         "$";
 
       var PATTERN = new RegExp(regex, 'i');
@@ -1116,34 +1116,78 @@
       }
     },
 
-    // Nested values validator support
-    items: function(value, options) {
+    // Nested array values validator support
+    properties: function(value, options, attrKey) {
       var internalConstraints = options
-        , internalOptions = { format: "flat" }
+        , internalOptions = { fullMessages: false, format: "jsonPath" }
+        , validationResults = [];
+
+      // Internal validator runs validations and remaps attribute keys
+      function validateInternal (internalAttributes, jsonPath, attributeKey) {
+        var internalAttr = {},
+          internalConst = {};
+        internalAttr[jsonPath] = internalAttributes;
+        internalConst[jsonPath] = internalConstraints[attributeKey];
+        return v.runValidations(internalAttr, internalConst, internalOptions);
+      }
+
+      // Perform the sub-validations
+      if (v.isObject(value)) {
+        var k, keyPath;
+        for (k in value) {
+          if (typeof internalConstraints[k] !== 'undefined') {
+            keyPath = attrKey ? attrKey + '.' + k : k;
+            validationResults = validationResults.concat(validateInternal(value[k], keyPath, k));
+          }
+        }
+      } else {
+        return "is not an object";
+      }
+
+      // we need to propegate promises upwards, so check for any and forward accordingly
+      var errPromiseCount = 0;
+      validationResults.forEach(function(result) {
+        if (v.isDefined(result.error) && v.isPromise(result.error)) {
+          errPromiseCount++;
+        }
+      });
+      if (errPromiseCount > 0) {
+        return new v.Promise(function(resolve, reject) {
+          v.waitForResults(validationResults).then(function() {
+            resolve(v.processValidationResults(validationResults, internalOptions));
+          });
+        });
+      }
+
+      // non-async happy path
+      return v.processValidationResults(validationResults, internalOptions);
+    },
+
+    // Nested properites values validator support
+    items: function(value, options, attrKey) {
+      var internalConstraints = options
+        , internalOptions = { fullMessages: false, format: "jsonPath" }
         , validationResults = [];
 
       // Internal validator runs validations and remaps attribute keys
       function validateInternal (internalAttributes, attributeKey) {
-        var internalResults = v.runValidations({ "": internalAttributes}, { "": internalConstraints}, internalOptions);
-        return internalResults.map(function(result) {
-          result.attribute = attributeKey;  // clobber attribute key to match its real relative path
-          return result;
-        });
+        var internalAttr = {},
+          internalConst = {};
+        internalAttr[attributeKey] = internalAttributes;
+        internalConst[attributeKey] = internalConstraints;
+        return v.runValidations(internalAttr, internalConst, internalOptions);
       }
 
       // Perform the sub-validations
       if (v.isArray(value)) {
-        var i;
+        var i, childKey;
         for (i=0; i<value.length; i++) {
-          validationResults = validationResults.concat(validateInternal(value[i], i));
-        }
-      } else if (v.isObject(value)) {
-        var k;
-        for (k in value) {
-          validationResults = validationResults.concat(validateInternal(value[k], k));
+          childKey = attrKey ? attrKey + '.[' + i + ']' : '[' + i + ']';
+          validationResults = validationResults.concat(validateInternal(value[i], childKey));
         }
       } else {
-        return "is not an array or object";
+        console.log("FINDME", value);
+        return "is not an array";
       }
 
       // we need to propegate promises upwards, so check for any and forward accordingly
@@ -1164,10 +1208,11 @@
       // non-async happy path
       return v.processValidationResults(validationResults, internalOptions);
     }
+
   };
 
   validate.exposeModule(validate, this, exports, module, define);
 }).call(this,
-        typeof exports !== 'undefined' ? /* istanbul ignore next */ exports : null,
-        typeof module !== 'undefined' ? /* istanbul ignore next */ module : null,
-        typeof define !== 'undefined' ? /* istanbul ignore next */ define : null);
+  typeof exports !== 'undefined' ? /* istanbul ignore next */ exports : null,
+  typeof module !== 'undefined' ? /* istanbul ignore next */ module : null,
+  typeof define !== 'undefined' ? /* istanbul ignore next */ define : null);
