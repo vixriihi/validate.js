@@ -1,8 +1,9 @@
 describe('validator.items', function() {
-  
-  var values = validate.validators.items.bind(validate.validators.items);
 
-  describe("propegates options as sub-validations", function() {
+  var items = validate.validators.items.bind(validate.validators.items);
+  var properties = validate.validators.properties.bind(validate.validators.properties);
+
+  describe("propagates options as sub-validations", function() {
     it("applies equality and inclusion validations to interior attributes", function() {
       var schema = {
         inclusion: {
@@ -11,17 +12,19 @@ describe('validator.items', function() {
         }
       };
       var val = ["foo", "bar", "three"];
-      var res = values(val, schema);
-      expect(res).toBeDefined();
-      expect(res.length).toEqual(1);
-      expect(res).toEqual(["2 three is not in the list!"]);
+      var res = items(val, schema);
+      expect(res).toEqual({
+        "[2]": [
+          "three is not in the list!"
+        ]
+      });
     });
   });
 
   describe("supports multiple layers of nesting", function() {
     it("supports two layers of value constraints", function() {
       var schema = {
-        "some.array": {
+        "array": {
           items: {
             items: {
               inclusion: {
@@ -32,55 +35,65 @@ describe('validator.items', function() {
         }
       };
       var validCase = {
-        some: {
-          array: [["validVal"], []]
-        }
+        array: [["validVal"], []]
       };
       var invalidCase = {
-        some: {
-          array: [["invalidVal", "validVal", "two"], []]
-        }
+        array: [["invalidVal", "validVal", "two"], []]
       };
       expect(validate(validCase, schema)).not.toBeDefined();
       expect(validate(invalidCase, schema)).toBeDefined();
-      expect(validate(invalidCase, schema, {format: "flat"}).length).toEqual(2);
     });
   });
 
-  describe("handles values inside arrays", function() {
+  describe("handles items inside arrays", function() {
     it("allows value specification targeting arrays", function() {
       var schema = {
         inclusion: {
           within: ["validVal"]
         }
       };
-      expect(values(["validVal"], schema)).not.toBeDefined();
-      expect(values(["invalidVal"], schema)).toBeDefined();
+      expect(items(["validVal"], schema)).not.toBeDefined();
+      expect(items(["invalidVal"], schema)).toBeDefined();
     });
   });
 
-  describe("handles values inside objects", function() {
+  describe("handles objexts inside array", function() {
     it("allows value specification targeting objects", function() {
       var schema = {
-        inclusion: {
-          within: ["validVal"]
+        properties: {
+          someKey: {
+            inclusion: {
+              within: ["validVal"]
+            }
+          }
         }
       };
-      expect(values({someKey: "validVal"}, schema)).not.toBeDefined();
-      expect(values({someKey: "invalidVal"}, schema)).toBeDefined();
+      expect(items([{someKey: "validVal"}], schema)).not.toBeDefined();
+      expect(items([{someKey: "invalidVal"}], schema)).toBeDefined();
     });
   });
 
-  describe("rejects things that are not arrays or objects", function() {
-    it("rejects things that are not arrays or objects", function() {
+  describe("rejects things that are not arrays", function() {
+    it("rejects things that are not arrays", function() {
       var schema = {
         inclusion: {
           within: ["validVal"]
         }
       };
-      expect(values("notAnArray", schema)).toBeDefined();
-      expect(values("notAnArray", schema)).toEqual("is not an array or object");
+      expect(items("notAnArray", schema)).toBeDefined();
+      expect(items("notAnArray", schema)).toEqual("is not an array");
     });
   });
 
+  describe("rejects things that are not objects", function() {
+    it("rejects things that are not object", function() {
+      var schema = {
+        inclusion: {
+          within: ["validVal"]
+        }
+      };
+      expect(properties("notAnObject", schema)).toBeDefined();
+      expect(properties("notAnObject", schema)).toEqual("is not an object");
+    });
+  });
 });

@@ -49,13 +49,7 @@ describe('validators.equality', function() {
     expect(validate.validators.equality.options).toEqual({message: "barfoo", attribute: "bar"});
     expect(options).toEqual({message: "foobar", attribute: "baz"});
   });
-
-  it("supports nested objects", function() {
-    expect(equality("foo", "bar.baz", "foo", {foo: "foo"})).toBeDefined();
-    expect(equality("foo", "bar.baz", "foo", {foo: "foo", bar: {baz: "baz"}})).toBeDefined();
-    expect(equality("foo", "bar.baz", "foo", {foo: "foo", bar: {baz: "foo"}})).not.toBeDefined();
-  });
-
+  
   it("throws an error if the attribute option isn't provided", function() {
     function run(options) {
       equality("foo", options, "foo", {foo: "foo"});
