@@ -1232,7 +1232,6 @@
           validationResults = validationResults.concat(validateInternal(value[i], childKey));
         }
       } else {
-        console.log("FINDME", value);
         return "is not an array";
       }
 
