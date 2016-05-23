@@ -1182,7 +1182,8 @@
       if (v.isArray(value)) {
         var i, childKey;
         for (i=0; i<value.length; i++) {
-          childKey = attrKey ? attrKey + '.[' + i + ']' : '[' + i + ']';
+          childKey = attrKey ? attrKey : '';
+          childKey += '[' + i + ']';
           validationResults = validationResults.concat(validateInternal(value[i], childKey));
         }
       } else {
