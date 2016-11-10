@@ -1187,7 +1187,7 @@
           }
         }
       } else {
-        return "is not an object";
+        return;
       }
 
       // we need to propegate promises upwards, so check for any and forward accordingly
@@ -1233,7 +1233,7 @@
           validationResults = validationResults.concat(validateInternal(value[i], childKey));
         }
       } else {
-        return "is not an array";
+        return;
       }
 
       // we need to propegate promises upwards, so check for any and forward accordingly
