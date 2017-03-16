@@ -51,7 +51,7 @@ describe('validator.items', function() {
         "array": {
           items: {
             properties: {
-              text: {
+              test: {
                 presence: {
                 }
               }
