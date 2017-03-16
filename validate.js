@@ -1132,13 +1132,11 @@
       }
 
       // Perform the sub-validations
-      if (v.isObject(value)) {
+      if (v.isObject(value) && v.isObject(internalConstraints)) {
         var k, keyPath;
-        for (k in value) {
-          if (typeof internalConstraints[k] !== 'undefined') {
-            keyPath = attrKey ? attrKey + '.' + k : k;
-            validationResults = validationResults.concat(validateInternal(value[k], keyPath, k));
-          }
+        for (k in internalConstraints) {
+          keyPath = attrKey ? attrKey + '.' + k : k;
+          validationResults = validationResults.concat(validateInternal(value[k], keyPath, k));
         }
       } else {
         return;
