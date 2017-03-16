@@ -45,6 +45,35 @@ describe('validator.items', function() {
     });
   });
 
+  describe("supports presence of nested items", function() {
+    it("supports two layers of value constraints", function() {
+      var schema = {
+        "array": {
+          items: {
+            properties: {
+              text: {
+                presence: {
+                }
+              }
+            }
+          }
+        }
+      };
+      var validCase = {
+        array: [{test: 'foo'}, {test: 'bar'}]
+      };
+      var invalidCase1 = {
+        array: [{test: 'foo'}, {other: 'bar'}]
+      };
+      var invalidCase2 = {
+        array: [{other: 'bar'}, {test: 'foo'}]
+      };
+      expect(validate(validCase, schema)).not.toBeDefined();
+      expect(validate(invalidCase1, schema)).toBeDefined();
+      expect(validate(invalidCase2, schema)).toBeDefined();
+    });
+  });
+
   describe("handles items inside arrays", function() {
     it("allows value specification targeting arrays", function() {
       var schema = {
