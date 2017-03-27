@@ -303,7 +303,7 @@ output format.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    processValidationResults: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">errors, options</span>) </span>{
+            <div class="content"><div class='highlight'><pre>    processValidationResults: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">errors, options, path</span>) </span>{
       errors = v.pruneEmptyErrors(errors, options);
       errors = v.expandMultipleErrors(errors, options);
       errors = v.convertErrorMessages(errors, options);
@@ -311,7 +311,7 @@ output format.</p>
       <span class="hljs-keyword">var</span> format = options.format || <span class="hljs-string">"grouped"</span>;
 
       <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> v.formatters[format] === <span class="hljs-string">'function'</span>) {
-        errors = v.formatters[format](errors);
+        errors = v.formatters[format](errors, path);
       } <span class="hljs-keyword">else</span> {
         <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(v.format(<span class="hljs-string">"Unknown format %{format}"</span>, options));
       }

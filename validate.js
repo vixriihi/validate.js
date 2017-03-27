@@ -146,7 +146,7 @@
 
     // Takes the output from runValidations and converts it to the correct
     // output format.
-    processValidationResults: function(errors, options) {
+    processValidationResults: function(errors, options, path) {
       errors = v.pruneEmptyErrors(errors, options);
       errors = v.expandMultipleErrors(errors, options);
       errors = v.convertErrorMessages(errors, options);
@@ -154,7 +154,7 @@
       var format = options.format || "grouped";
 
       if (typeof v.formatters[format] === 'function') {
-        errors = v.formatters[format](errors);
+        errors = v.formatters[format](errors, path);
       } else {
         throw new Error(v.format("Unknown format %{format}", options));
       }
