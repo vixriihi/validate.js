@@ -1253,6 +1253,24 @@
       }
       return errors;
     },
+    jsonPath: function(errors, parent) {
+      var attr, err = {}, path;
+      errors = v.jsonPathError(errors);
+
+      for (attr in errors) {
+        if (v.isObject(errors[attr]) && !v.isArray(errors[attr])) {
+          var k;
+          for (k in errors[attr]) {
+            path = parent ? parent + '.' + k : k;
+            err[path] = errors[attr][k];
+          }
+        } else {
+          path = parent ? parent + '.' + attr : attr;
+          err[path] = errors[attr];
+        }
+      }
+      return err;
+    },
     constraint: function(errors) {
       var attr;
       errors = v.groupErrorsByAttribute(errors);
