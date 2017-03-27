@@ -1168,22 +1168,9 @@
         , internalOptions = { fullMessages: false, format: "jsonPath" }
         , validationResults = [];
 
-      // Internal validator runs validations and remaps attribute keys
-      function validateInternal (internalAttributes, jsonPath, attributeKey) {
-        var internalAttr = {},
-          internalConst = {};
-        internalAttr[jsonPath] = internalAttributes;
-        internalConst[jsonPath] = internalConstraints[attributeKey];
-        return v.runValidations(internalAttr, internalConst, internalOptions);
-      }
-
       // Perform the sub-validations
       if (v.isObject(value) && v.isObject(internalConstraints)) {
-        var k, keyPath;
-        for (k in internalConstraints) {
-          keyPath = attrKey ? attrKey + '.' + k : k;
-          validationResults = validationResults.concat(validateInternal(value[k], keyPath, k));
-        }
+        validationResults = v.runValidations(value, internalConstraints, internalOptions);
       } else {
         return;
       }
@@ -1198,13 +1185,13 @@
       if (errPromiseCount > 0) {
         return new v.Promise(function(resolve, reject) {
           v.waitForResults(validationResults).then(function() {
-            resolve(v.processValidationResults(validationResults, internalOptions));
+            resolve(v.processValidationResults(validationResults, internalOptions, attrKey));
           });
         });
       }
 
       // non-async happy path
-      return v.processValidationResults(validationResults, internalOptions);
+      return v.processValidationResults(validationResults, internalOptions, attrKey);
     },
 
     // Nested properites values validator support
