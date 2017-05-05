@@ -685,10 +685,14 @@
     },
 
     jsonPathError: function(errors) {
-      var ret = {};
+      var ret = {}, k;
       errors.forEach(function(error) {
         if (v.isObject(error.error)) {
-          ret[error.attribute] = error.error;
+          for(k in error.error) {
+            if (error.error.hasOwnProperty(k)) {
+              ret[k] = error.error[k];
+            }
+          }
         } else {
           if (typeof ret[error.attribute] === 'undefined') {
             ret[error.attribute] = [];

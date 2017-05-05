@@ -74,6 +74,38 @@ describe('validator.items', function() {
     });
   });
 
+  describe("supports presence in validator on nested object", function() {
+    it("allows validators on parent level", function() {
+      var schema = {
+        "obj": {
+          properties: {
+            test: {
+              items: {
+                properties: {
+                  test2: {
+                    presence: {}
+                  }
+                }
+              },
+              length: {
+                minimum: 2
+              }
+            }
+          }
+        }
+      };
+      var validCase = {
+        obj: {test: [{test2: 'foo'}, {test2: 'bar'}]}
+      };
+      var invalidCase1 = {
+        obj: {test: [{invalid: 'foo'}]}
+      };
+      console.log('validate', validate(validCase, schema));
+      expect(validate(validCase, schema)).not.toBeDefined();
+      expect(validate(invalidCase1, schema)).toBeDefined();
+    });
+  });
+
   describe("handles items inside arrays", function() {
     it("allows value specification targeting arrays", function() {
       var schema = {
