@@ -43,19 +43,19 @@ describe("validate", function() {
     };
     var constraints = {
       name: {
-        pass: true
+        pass_1: true
       },
       email: {
-        pass: true,
-        fail: true,
-        fail2: true
+        pass_1: true,
+        fail_2: true,
+        fail2_3: true
       },
       "addresses.work.street": {
-        pass: true,
-        fail2: true,
+        pass_1: true,
+        fail2_2: true,
       },
       "addresses.work.city": {
-        pass: true
+        pass_1: true
       },
     };
 

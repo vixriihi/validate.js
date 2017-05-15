@@ -98,6 +98,9 @@
 
       // Loops through each constraints, finds the correct validator and run it.
       for (attr in constraints) {
+        if (!constraints.hasOwnProperty(attr)) {
+          continue;
+        }
         value = v.getDeepObjectValue(attributes, attr);
         // This allows the constraints for an attribute to be a function.
         // The function will be called with the value, attribute name, the complete dict of
@@ -107,7 +110,10 @@
         validators = v.result(constraints[attr], value, attributes, attr, options, constraints);
 
         for (validatorName in validators) {
-          validator = v.validators[validatorName];
+          if (!validators.hasOwnProperty(validatorName)) {
+            continue;
+          }
+          validator = v.validators[validatorName.replace(/_[\d]+/g,'')];
 
           if (!validator) {
             error = v.format("Unknown validator %{name}", {name: validatorName});
