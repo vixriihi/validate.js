@@ -100,17 +100,18 @@ describe("validate", function() {
       expect(pass).toHaveBeenCalledWithContext(pass);
     });
 
-    it("calls the validator with the val, opts, key, attributes and global options", function() {
+    it("calls the validator with the val, opts, key, attributes, global options and global formData", function() {
       var options = {someOption: true}
         , attributes = {someAttribute: 'some value'}
         , constraints = {someAttribute: {pass: options}}
         , globalOptions = {someOption: 'some value'};
-      validate.runValidations(attributes, constraints, globalOptions);
+      validate.runValidations(attributes, constraints, globalOptions, attributes);
       expect(pass).toHaveBeenCalledWith('some value',
                                         options,
                                         'someAttribute',
                                         attributes,
-                                        globalOptions);
+                                        globalOptions,
+                                        attributes);
     });
 
     it("returns an array of results", function() {
@@ -195,7 +196,7 @@ describe("validate", function() {
         , globalOptions = {foo: "bar"};
       validate.runValidations(attrs, constraints, globalOptions);
       expect(spy).toHaveBeenCalledWith("Nicklas", attrs, "name", globalOptions, constraints);
-      expect(pass).toHaveBeenCalledWith("Nicklas", options.pass, "name", attrs, globalOptions);
+      expect(pass).toHaveBeenCalledWith("Nicklas", options.pass, "name", attrs, globalOptions, undefined);
     });
 
     it("allows the options for a validator to be a function", function() {
@@ -203,10 +204,11 @@ describe("validate", function() {
         , attrs = {name: "Nicklas"}
         , spy = jasmine.createSpy("options").and.returnValue(options)
         , constraints = {name: {pass: spy}}
-        , globalOptions = {foo: "bar"};
-      validate.runValidations(attrs, constraints, globalOptions);
+        , globalOptions = {foo: "bar"}
+        , globalValue = {val: attrs};
+      validate.runValidations(attrs, constraints, globalOptions, globalValue);
       expect(spy).toHaveBeenCalledWith("Nicklas", attrs, "name", globalOptions, constraints);
-      expect(pass).toHaveBeenCalledWith("Nicklas", options, "name", attrs, globalOptions);
+      expect(pass).toHaveBeenCalledWith("Nicklas", options, "name", attrs, globalOptions, globalValue);
     });
 
     it("doesnt run the validations if the options are falsy", function() {
@@ -230,7 +232,8 @@ describe("validate", function() {
         true,
         "foo",
         {foo: "bar"},
-        {}
+        {},
+        {foo: "bar"}
       );
 
       validate($form, constraints);
@@ -240,7 +243,8 @@ describe("validate", function() {
         true,
         "foo",
         {foo: "bar"},
-        {}
+        {},
+        {foo: "bar"}
       );
     });
   });

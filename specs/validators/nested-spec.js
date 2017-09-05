@@ -100,7 +100,6 @@ describe('validator.items', function() {
       var invalidCase1 = {
         obj: {test: [{invalid: 'foo'}]}
       };
-      console.log('validate', validate(validCase, schema));
       expect(validate(validCase, schema)).not.toBeDefined();
       expect(validate(invalidCase1, schema)).toBeDefined();
     });

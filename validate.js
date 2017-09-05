@@ -23,7 +23,7 @@
   var validate = function(attributes, constraints, options) {
     options = v.extend({}, v.options, options);
 
-    var results = v.runValidations(attributes, constraints, options)
+    var results = v.runValidations(attributes, constraints, options, attributes)
       , attr
       , validator;
 
@@ -82,7 +82,7 @@
     // Runs the validators specified by the constraints object.
     // Will return an array of the format:
     //     [{attribute: "<attribute name>", error: "<validation result>"}, ...]
-    runValidations: function(attributes, constraints, options) {
+    runValidations: function(attributes, constraints, options, formData) {
       var results = []
         , attr
         , validatorName
@@ -94,6 +94,7 @@
 
       if (v.isDomElement(attributes) || v.isJqueryElement(attributes)) {
         attributes = v.collectFormValues(attributes);
+        formData = v.collectFormValues(formData);
       }
 
       // Loops through each constraints, finds the correct validator and run it.
@@ -142,7 +143,9 @@
                 validatorOptions,
                 attr,
                 attributes,
-                options)
+                options,
+                formData
+              )
           });
         }
       }
@@ -183,8 +186,7 @@
       if (options.cleanAttributes !== false) {
         attributes = v.cleanAttributes(attributes, constraints);
       }
-
-      var results = v.runValidations(attributes, constraints, options);
+      var results = v.runValidations(attributes, constraints, options, attributes);
 
       return new v.Promise(function(resolve, reject) {
         v.waitForResults(results).then(function() {
@@ -1173,14 +1175,14 @@
     },
 
     // Nested array values validator support
-    properties: function(value, options, attrKey) {
+    properties: function(value, options, attrKey, attributes, allOptions, formData) {
       var internalConstraints = options
         , internalOptions = { fullMessages: false, format: "jsonPath" }
         , validationResults = [];
 
       // Perform the sub-validations
       if (v.isObject(value) && v.isObject(internalConstraints)) {
-        validationResults = v.runValidations(value, internalConstraints, internalOptions);
+        validationResults = v.runValidations(value, internalConstraints, internalOptions, formData);
       } else {
         return;
       }
@@ -1205,7 +1207,7 @@
     },
 
     // Nested properites values validator support
-    items: function(value, options, attrKey) {
+    items: function(value, options, attrKey, attributes, allOptions, formData) {
       var internalConstraints = options
         , internalOptions = { fullMessages: false, format: "jsonPath" }
         , validationResults = [];
@@ -1216,7 +1218,7 @@
           internalConst = {};
         internalAttr[attributeKey] = internalAttributes;
         internalConst[attributeKey] = internalConstraints;
-        return v.runValidations(internalAttr, internalConst, internalOptions);
+        return v.runValidations(internalAttr, internalConst, internalOptions, formData);
       }
 
       // Perform the sub-validations
